@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Aplicación de lista de tareas - Trabajo Práctico de Paradigmas de Programación">
+    <title>ToDoList - Gestor de Tareas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="logo">📋 ToDoList</h1>
+            </div>
+            <div class="header-right">
+                <button id="btn-theme" class="btn-icon" title="Cambiar tema">
+                    <span class="icon-sun">☀️</span>
+                    <span class="icon-moon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav class="nav">
+                    <h2 class="nav-title">Filtros</h2>
+                    <ul class="nav-list">
+                        <li>
+                            <button class="nav-item active" data-filter="todas">
+                                <span class="nav-icon">📋</span>
+                                <span>Todas</span>
+                                <span class="badge" id="count-todas">0</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-filter="P">
+                                <span class="nav-icon">🟡</span>
+                                <span>Pendientes</span>
+                                <span class="badge" id="count-pendientes">0</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-filter="E">
+                                <span class="nav-icon">🔵</span>
+                                <span>En curso</span>
+                                <span class="badge" id="count-encurso">0</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-filter="T">
+                                <span class="nav-icon">🟢</span>
+                                <span>Terminadas</span>
+                                <span class="badge" id="count-terminadas">0</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-filter="C">
+                                <span class="nav-icon">⚫</span>
+                                <span>Canceladas</span>
+                                <span class="badge" id="count-canceladas">0</span>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="stats-panel">
+                    <h2 class="nav-title">Estadísticas</h2>
+                    <div class="stat-item">
+                        <span class="stat-label">Total</span>
+                        <span class="stat-value" id="stat-total">0</span>
+                    </div>
+                    <div class="stat-item stat-warning">
+                        <span class="stat-label">⚠️ Vencidas</span>
+                        <span class="stat-value" id="stat-vencidas">0</span>
+                    </div>
+                    <div class="stat-item stat-priority">
+                        <span class="stat-label">🔥 Prioridad alta</span>
+                        <span class="stat-value" id="stat-prioridad">0</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Content -->
+            <section class="content">
+                <div class="content-header">
+                    <h2 id="content-title">Todas las tareas</h2>
+                    <div class="content-actions">
+                        <div class="search-box">
+                            <input type="text" id="input-buscar" placeholder="Buscar tareas..." class="input-search">
+                        </div>
+                        <button id="btn-nueva" class="btn btn-primary">
+                            <span>+ Nueva tarea</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tasks-container" id="tasks-container">
+                    <!-- Las tareas se renderizan aquí -->
+                </div>
+
+                <div class="empty-state" id="empty-state" style="display: none;">
+                    <span class="empty-icon">📭</span>
+                    <p>No hay tareas para mostrar</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para crear/editar tarea -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Nueva tarea</h3>
+                <button class="btn-close" id="btn-close-modal">&times;</button>
+            </div>
+            <form id="form-tarea" class="modal-body">
+                <input type="hidden" id="input-id">
+                
+                <div class="form-group">
+                    <label for="input-titulo">Título *</label>
+                    <input type="text" id="input-titulo" class="input" required maxlength="100" placeholder="¿Qué necesitas hacer?">
+                </div>
+
+                <div class="form-group">
+                    <label for="input-descripcion">Descripción</label>
+                    <textarea id="input-descripcion" class="input textarea" maxlength="500" placeholder="Detalles adicionales..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="input-estado">Estado</label>
+                        <select id="input-estado" class="input select">
+                            <option value="P">Pendiente</option>
+                            <option value="E">En curso</option>
+                            <option value="T">Terminada</option>
+                            <option value="C">Cancelada</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="input-dificultad">Dificultad</label>
+                        <select id="input-dificultad" class="input select">
+                            <option value="1">Fácil ★☆☆</option>
+                            <option value="2">Medio ★★☆</option>
+                            <option value="3">Difícil ★★★</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="input-vencimiento">Fecha de vencimiento</label>
+                    <input type="date" id="input-vencimiento" class="input">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancelar">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btn-guardar">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para eliminar -->
+    <div class="modal-overlay" id="modal-eliminar">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h3>Eliminar tarea</h3>
+                <button class="btn-close" id="btn-close-eliminar">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar esta tarea?</p>
+                <p class="text-muted" id="tarea-a-eliminar"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancelar-eliminar">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btn-confirmar-eliminar">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
