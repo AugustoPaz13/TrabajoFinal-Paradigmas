@@ -1,38 +1,62 @@
 [
-    {
-        "titulo": "Estudiar para el parcial de Análisis Matemático",
-        "descripcion": "Repasar integrales dobles y triples. Ver videos de Julio Profe si no entiendo.",
-        "estado": "PENDING",
-        "dificultad": 4,
-        "creacion": "2025-11-20T10:00:00.000Z",
-        "ultimaEdicion": "2025-11-20T10:00:00.000Z",
-        "vencimiento": "2025-12-05T09:00:00.000Z"
-    },
-    {
-        "titulo": "Comprar facturas",
-        "descripcion": "Para la juntada de estudio del fin de semana. No olvidarse de las de dulce de leche.",
-        "estado": "PENDING",
-        "dificultad": 1,
-        "creacion": "2025-11-29T18:00:00.000Z",
-        "ultimaEdicion": "2025-11-29T18:00:00.000Z",
-        "vencimiento": "2025-11-30T16:00:00.000Z"
-    },
-    {
-        "titulo": "Terminar el TP de Paradigmas",
-        "descripcion": "Migrar el código a TypeScript y agregar nuevas funcionalidades. Revisar la teoría de lógico.",
-        "estado": "IN-PROGRESS",
-        "dificultad": 5,
-        "creacion": "2025-11-25T14:00:00.000Z",
-        "ultimaEdicion": "2025-11-29T19:00:00.000Z",
-        "vencimiento": "2025-12-01T23:59:00.000Z"
-    },
-    {
-        "titulo": "Renovar el boleto estudiantil",
-        "descripcion": "Ir a la terminal para actualizar la tarjeta del colectivo.",
-        "estado": "FINISHED",
-        "dificultad": 1,
-        "creacion": "2025-11-10T09:00:00.000Z",
-        "ultimaEdicion": "2025-11-11T11:00:00.000Z",
-        "vencimiento": null
-    }
+  {
+    "id": "3c5d4e55-6779-48f8-b8fb-6d12361d0289",
+    "titulo": "Estudiar para el parcial de Análisis Matemático",
+    "descripcion": "Repasar integrales dobles y triples. Ver videos de Julio Profe si no entiendo.",
+    "estado": "PENDING",
+    "dificultad": 1,
+    "creacion": "2025-11-20T10:00:00.000Z",
+    "ultimaEdicion": "2025-11-20T10:00:00.000Z",
+    "vencimiento": "2025-12-05T09:00:00.000Z"
+  },
+  {
+    "id": "b38e6c35-7e8d-4f2a-8b75-afe9d4e28467",
+    "titulo": "Comprar facturas",
+    "descripcion": "Para la juntada de estudio del fin de semana. No olvidarse de las de dulce de leche.",
+    "estado": "PENDING",
+    "dificultad": 1,
+    "creacion": "2025-11-29T18:00:00.000Z",
+    "ultimaEdicion": "2025-11-29T18:00:00.000Z",
+    "vencimiento": "2025-11-30T16:00:00.000Z"
+  },
+  {
+    "id": "b2ca773d-6245-43a7-b06a-0f48d7707e1e",
+    "titulo": "Terminar el TP de Paradigmas",
+    "descripcion": "Migrar el código a TypeScript y agregar nuevas funcionalidades. Revisar la teoría de lógico.",
+    "estado": "IN-PROGRESS",
+    "dificultad": 1,
+    "creacion": "2025-11-25T14:00:00.000Z",
+    "ultimaEdicion": "2026-03-10T19:30:43.453Z",
+    "vencimiento": "2026-03-11T00:00:00.000Z"
+  },
+  {
+    "id": "fb4e16fe-cfe6-45f5-bd7c-a7a7d97adc45",
+    "titulo": "Renovar el boleto estudiantil",
+    "descripcion": "Ir a la terminal para actualizar la tarjeta del colectivo.",
+    "estado": "FINISHED",
+    "dificultad": 1,
+    "creacion": "2025-11-10T09:00:00.000Z",
+    "ultimaEdicion": "2025-11-11T11:00:00.000Z",
+    "vencimiento": null
+  },
+  {
+    "id": "a55d5551-78fe-4966-9ec0-fefd334a75b7",
+    "titulo": "Anotarse en la reincorporación",
+    "descripcion": "Ingresar al SIU para reincorporarse a la cursada",
+    "estado": "CANCELED",
+    "dificultad": 1,
+    "creacion": "2026-03-10T18:31:57.867Z",
+    "ultimaEdicion": "2026-03-10T18:32:12.832Z",
+    "vencimiento": "2026-04-30T00:00:00.000Z"
+  },
+  {
+    "id": "2b0811aa-a275-4670-84f9-9ce44abf772b",
+    "titulo": "Hacer los diagramas de Sistemas II",
+    "descripcion": "Hacer los diagramas del modulo Gerente",
+    "estado": "IN-PROGRESS",
+    "dificultad": 3,
+    "creacion": "2026-03-10T20:09:32.319Z",
+    "ultimaEdicion": "2026-03-10T20:09:32.319Z",
+    "vencimiento": "2026-03-13T00:00:00.000Z"
+  }
 ]

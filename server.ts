@@ -127,6 +127,30 @@ const gestor = new GestorTareas(repositorio);
         }
     });
 
+    // Obtener tareas vencidas
+    app.get('/api/tareas/vencidas', (_req: Request, res: Response) => {
+        const tareas = gestor.obtenerVencidas();
+        res.json(tareas.map(t => serializarTarea(t)));
+    });
+
+    // Obtener tareas de prioridad alta
+    app.get('/api/tareas/prioridad-alta', (_req: Request, res: Response) => {
+        const tareas = gestor.obtenerPrioridadAlta();
+        res.json(tareas.map(t => serializarTarea(t)));
+    });
+
+    // Obtener tareas relacionadas con una tarea específica
+    app.get('/api/tareas/:id/relacionadas', (req: Request, res: Response) => {
+        const todasLasTareas = gestor.ordenarPorCreacion();
+        const tarea = todasLasTareas.find(t => t.id === req.params.id);
+        if (!tarea) {
+            res.status(404).json({ error: 'Tarea no encontrada' });
+            return;
+        }
+        const relacionadas = gestor.obtenerRelacionadas(tarea);
+        res.json(relacionadas.map(t => serializarTarea(t)));
+    });
+
     // Eliminar tarea
     app.delete('/api/tareas/:id', async (req: Request, res: Response) => {
         const tareas = gestor.ordenarPorCreacion();

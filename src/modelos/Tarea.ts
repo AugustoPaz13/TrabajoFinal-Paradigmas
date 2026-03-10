@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 import { Estado } from './Estado';
 import { Dificultad } from './Dificultad';
 
@@ -31,7 +31,7 @@ export class Tarea {
         this.validarTitulo(props.titulo);
         this.validarDescripcion(props.descripcion);
 
-        this.id = props.id || crypto.randomUUID();
+        this.id = props.id || uuidv4();
         this.titulo = props.titulo.trim();
         this.descripcion = props.descripcion ? props.descripcion.trim() : null;
         this.estado = props.estado || Estado.PENDIENTE;

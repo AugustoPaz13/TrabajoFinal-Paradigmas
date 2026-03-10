@@ -1,6 +1,8 @@
 // ===== Estado de la Aplicación =====
 let tareas = [];
 let filtroActual = 'todas';
+let ordenActual = 'titulo';
+let tareaViendoDetalle = null;
 let tareaEditando = null;
 let tareaAEliminar = null;
 
@@ -9,6 +11,7 @@ const tasksContainer = document.getElementById('tasks-container');
 const emptyState = document.getElementById('empty-state');
 const contentTitle = document.getElementById('content-title');
 const inputBuscar = document.getElementById('input-buscar');
+const selectOrden = document.getElementById('select-orden');
 const btnNueva = document.getElementById('btn-nueva');
 const btnTheme = document.getElementById('btn-theme');
 
@@ -31,6 +34,12 @@ const tareaAEliminarTexto = document.getElementById('tarea-a-eliminar');
 const btnCloseEliminar = document.getElementById('btn-close-eliminar');
 const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
 const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar');
+
+// Modal de detalle
+const modalDetalle = document.getElementById('modal-detalle');
+const btnCloseDetalle = document.getElementById('btn-close-detalle');
+const btnDetalleEditar = document.getElementById('btn-detalle-editar');
+const btnDetalleEliminar = document.getElementById('btn-detalle-eliminar');
 
 // Navegación
 const navItems = document.querySelectorAll('.nav-item');
@@ -129,36 +138,107 @@ async function buscarTareas(query) {
     }
 }
 
+async function fetchVencidas() {
+    try {
+        const response = await fetch('/api/tareas/vencidas');
+        return await response.json();
+    } catch (error) {
+        console.error('Error al obtener vencidas:', error);
+        return [];
+    }
+}
+
+async function fetchPrioridadAlta() {
+    try {
+        const response = await fetch('/api/tareas/prioridad-alta');
+        return await response.json();
+    } catch (error) {
+        console.error('Error al obtener prioridad alta:', error);
+        return [];
+    }
+}
+
+async function fetchRelacionadas(id) {
+    try {
+        const response = await fetch(`/api/tareas/${id}/relacionadas`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error al obtener relacionadas:', error);
+        return [];
+    }
+}
+
 // ===== Renderizado =====
 function renderizarTareas() {
-    let tareasFiltradas = filtrarTareas();
+    let tareasFiltradas;
 
-    tasksContainer.innerHTML = '';
-
-    if (tareasFiltradas.length === 0) {
-        emptyState.style.display = 'block';
+    // Los filtros de vencidas y prioridad-alta se manejan de forma asíncrona
+    if (filtroActual === 'vencidas' || filtroActual === 'prioridad-alta') {
+        // Estos se renderizan desde renderizarFiltroEspecial()
         return;
     }
 
+    tareasFiltradas = filtrarTareas();
+    _renderizarLista(tareasFiltradas);
+}
+
+async function renderizarFiltroEspecial(filtro) {
+    tasksContainer.innerHTML = '<div class="loading">Cargando...</div>';
     emptyState.style.display = 'none';
 
-    tareasFiltradas.forEach(tarea => {
+    let lista = [];
+    if (filtro === 'vencidas') lista = await fetchVencidas();
+    else if (filtro === 'prioridad-alta') lista = await fetchPrioridadAlta();
+
+    lista = ordenarTareas(lista);
+    _renderizarLista(lista);
+}
+
+function _renderizarLista(lista) {
+    tasksContainer.innerHTML = '';
+    if (lista.length === 0) {
+        emptyState.style.display = 'block';
+        return;
+    }
+    emptyState.style.display = 'none';
+    lista.forEach(tarea => {
         const card = crearTarjetaTarea(tarea);
         tasksContainer.appendChild(card);
     });
 }
 
 function filtrarTareas() {
-    if (filtroActual === 'todas') {
-        return tareas;
-    }
-    return tareas.filter(t => t.estado === filtroActual);
+    const base = filtroActual === 'todas'
+        ? [...tareas]
+        : tareas.filter(t => t.estado === filtroActual);
+    return ordenarTareas(base);
+}
+
+function ordenarTareas(lista) {
+    return [...lista].sort((a, b) => {
+        switch (ordenActual) {
+            case 'titulo':
+                return a.titulo.localeCompare(b.titulo, 'es', { sensitivity: 'base' });
+            case 'vencimiento': {
+                if (!a.vencimiento && !b.vencimiento) return 0;
+                if (!a.vencimiento) return 1;
+                if (!b.vencimiento) return -1;
+                return new Date(a.vencimiento) - new Date(b.vencimiento);
+            }
+            case 'creacion':
+                return new Date(a.creacion) - new Date(b.creacion);
+            case 'dificultad':
+                return b.dificultad - a.dificultad;
+            default:
+                return 0;
+        }
+    });
 }
 
 function crearTarjetaTarea(tarea) {
     const card = document.createElement('div');
     card.className = `task-card${tarea.estaVencida ? ' vencida' : ''}`;
-    card.onclick = () => abrirModalEditar(tarea);
+    card.onclick = () => abrirModalDetalle(tarea);
 
     const estadoClase = obtenerClaseEstado(tarea.estado);
 
@@ -204,7 +284,9 @@ function actualizarEstadisticas() {
         P: tareas.filter(t => t.estado === 'P').length,
         E: tareas.filter(t => t.estado === 'E').length,
         T: tareas.filter(t => t.estado === 'T').length,
-        C: tareas.filter(t => t.estado === 'C').length
+        C: tareas.filter(t => t.estado === 'C').length,
+        vencidas: tareas.filter(t => t.estaVencida).length,
+        prioridadAlta: tareas.filter(t => t.esPrioridadAlta).length
     };
 
     document.getElementById('count-todas').textContent = contadores.todas;
@@ -212,14 +294,57 @@ function actualizarEstadisticas() {
     document.getElementById('count-encurso').textContent = contadores.E;
     document.getElementById('count-terminadas').textContent = contadores.T;
     document.getElementById('count-canceladas').textContent = contadores.C;
+    document.getElementById('count-vencidas').textContent = contadores.vencidas;
+    document.getElementById('count-prioridad-alta').textContent = contadores.prioridadAlta;
 
     // Estadísticas generales
     document.getElementById('stat-total').textContent = contadores.todas;
-    document.getElementById('stat-vencidas').textContent = tareas.filter(t => t.estaVencida).length;
-    document.getElementById('stat-prioridad').textContent = tareas.filter(t => t.esPrioridadAlta).length;
+    document.getElementById('stat-vencidas').textContent = contadores.vencidas;
+    document.getElementById('stat-prioridad').textContent = contadores.prioridadAlta;
 }
 
-// ===== Modales =====
+// ===== Modal de Detalle =====
+async function abrirModalDetalle(tarea) {
+    tareaViendoDetalle = tarea;
+
+    document.getElementById('detalle-titulo').textContent = tarea.titulo;
+    document.getElementById('detalle-id').textContent = tarea.id;
+    document.getElementById('detalle-creacion').textContent = formatearFechaCompleta(tarea.creacion);
+    document.getElementById('detalle-ultima-edicion').textContent = formatearFechaCompleta(tarea.ultimaEdicion);
+
+    const vencimientoRow = document.getElementById('detalle-vencimiento-row');
+    if (tarea.vencimiento) {
+        document.getElementById('detalle-vencimiento').textContent = formatearFecha(tarea.vencimiento);
+        vencimientoRow.style.display = '';
+    } else {
+        vencimientoRow.style.display = 'none';
+    }
+
+    // Cargar relacionadas
+    const listaEl = document.getElementById('detalle-relacionadas-lista');
+    listaEl.innerHTML = '<span class="detalle-empty">Cargando...</span>';
+    modalDetalle.classList.add('active');
+
+    const relacionadas = await fetchRelacionadas(tarea.id);
+    if (relacionadas.length === 0) {
+        listaEl.innerHTML = '<span class="detalle-empty">No hay tareas relacionadas.</span>';
+    } else {
+        listaEl.innerHTML = relacionadas.map(r => `
+            <div class="related-item" onclick="cerrarModalDetalle(); setTimeout(() => abrirModalDetalle(tareas.find(t => t.id === '${r.id}') || ${JSON.stringify(r)}), 200)">
+                <span class="related-dot ${obtenerClaseEstado(r.estado)}"></span>
+                <span class="related-titulo">${escapeHtml(r.titulo)}</span>
+                <span class="related-dificultad">${r.dificultadEstrellas}</span>
+            </div>
+        `).join('');
+    }
+}
+
+function cerrarModalDetalle() {
+    modalDetalle.classList.remove('active');
+    tareaViendoDetalle = null;
+}
+
+// ===== Modales de Editar/Nueva =====
 function abrirModalNueva() {
     tareaEditando = null;
     modalTitle.textContent = 'Nueva tarea';
@@ -288,6 +413,22 @@ function configurarEventListeners() {
         if (e.target === modalEliminar) cerrarModalEliminar();
     });
 
+    // Modal de detalle
+    btnCloseDetalle.addEventListener('click', cerrarModalDetalle);
+    modalDetalle.addEventListener('click', (e) => {
+        if (e.target === modalDetalle) cerrarModalDetalle();
+    });
+    btnDetalleEditar.addEventListener('click', () => {
+        const t = tareaViendoDetalle;
+        cerrarModalDetalle();
+        setTimeout(() => abrirModalEditar(t), 200);
+    });
+    btnDetalleEliminar.addEventListener('click', () => {
+        const t = tareaViendoDetalle;
+        cerrarModalDetalle();
+        setTimeout(() => abrirModalEliminar(t), 200);
+    });
+
     // Formulario
     formTarea.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -320,8 +461,19 @@ function configurarEventListeners() {
 
             filtroActual = item.dataset.filter;
             contentTitle.textContent = obtenerTituloFiltro(filtroActual);
-            renderizarTareas();
+
+            if (filtroActual === 'vencidas' || filtroActual === 'prioridad-alta') {
+                renderizarFiltroEspecial(filtroActual);
+            } else {
+                renderizarTareas();
+            }
         });
+    });
+
+    // Ordenamiento
+    selectOrden.addEventListener('change', () => {
+        ordenActual = selectOrden.value;
+        renderizarTareas();
     });
 
     // Búsqueda
@@ -351,6 +503,7 @@ function configurarEventListeners() {
         if (e.key === 'Escape') {
             cerrarModal();
             cerrarModalEliminar();
+            cerrarModalDetalle();
         }
     });
 }
@@ -361,7 +514,9 @@ function obtenerTituloFiltro(filtro) {
         'P': 'Tareas pendientes',
         'E': 'Tareas en curso',
         'T': 'Tareas terminadas',
-        'C': 'Tareas canceladas'
+        'C': 'Tareas canceladas',
+        'vencidas': '⚠️ Tareas vencidas',
+        'prioridad-alta': '🔥 Prioridad alta'
     };
     return titulos[filtro] || 'Tareas';
 }
@@ -377,8 +532,22 @@ function formatearFecha(fechaISO) {
     });
 }
 
+function formatearFechaCompleta(fechaISO) {
+    if (!fechaISO) return '-';
+    const fecha = new Date(fechaISO);
+    return fecha.toLocaleString('es-AR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
+
+
